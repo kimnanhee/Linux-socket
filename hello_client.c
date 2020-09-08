@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 	str_len = read(sock, message, sizeof(message)-1);
 	if(str_len == -1) error_handling("read() error!");
 
-	printf("Message fron server: %s \n", message);
+	printf("Message from server: %s \n", message);
 	close(sock);
 	return 0;
 }
