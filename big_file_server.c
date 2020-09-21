@@ -55,14 +55,9 @@ int main(int argc, char *argv[])
 	while(1)
 	{
 		int length = read(fp, buff, sizeof(buff)); // read file
-		printf("%s\n", buff);
-		if(length > 0) write(clnt_sock, buff, sizeof(buff));
-		else 
-		{
-			char end_str[]="END";
-			write(clnt_sock, end_str, sizeof(end_str)); 
-			break;
-		}
+		printf("%s", buff);
+		if(length > 0) write(clnt_sock, buff, length);
+		else break;
 	}
 	close(fp); // close file
 

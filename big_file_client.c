@@ -41,11 +41,11 @@ int main(int argc, char *argv[])
 	while(1)
 	{
 		memset(buff, 0, 1024);
-		str_len = read(sock, buff, sizeof(buff)-1);
-		if(str_len == -1) error_handling("read() error!");
+		str_len = read(sock, buff, sizeof(buff));
+		if(str_len <= 0) break;
 		printf("%s", buff);
-		if(strcmp(buff, "END")==0) break;
-		else write(fp, buff, sizeof(buff));
+		
+		write(fp, buff, str_len);
 	}
 	printf("content.txt file open please\n");
 	close(sock);
