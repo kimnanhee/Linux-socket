@@ -56,8 +56,9 @@ int main(int argc, char *argv[])
 	if(fp < 0) error_handling("file open error"); // file pointer error
 	while(1)
 	{
-		int length = read(fp, buff, sizeof(buff)); // read file
-		printf("%s", buff);
+		memset(buff, 0, 1024); // initialize
+		int length = read(fp, buff, sizeof(buff)-1); // read file
+		// printf("%s", buff);
 		if(length > 0) write(clnt_sock, buff, length); // 파일에서 읽어온 값이 있을 때까지 
 		else break;
 	}

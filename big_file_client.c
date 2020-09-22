@@ -18,7 +18,6 @@ int main(int argc, char *argv[])
 	struct sockaddr_in serv_addr;
 	
 	char buff[1024];
-	int str_len;
 
 	if(argc!=4)
 	{
@@ -43,9 +42,9 @@ int main(int argc, char *argv[])
 	while(1)
 	{
 		memset(buff, 0, 1024); // 초기화  
-		str_len = read(sock, buff, sizeof(buff));
+		int str_len = read(sock, buff, sizeof(buff));
+		// printf("%s", buff); // 출력 
 		if(str_len <= 0) break; // 받은 값이 있을 때까지 
-		printf("%s", buff); // 출력 
 		write(fp, buff, str_len); // 파일에 쓰기 
 	}
 	printf("content.txt file open please\n");
