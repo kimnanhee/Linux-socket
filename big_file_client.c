@@ -26,26 +26,25 @@ int main(int argc, char *argv[])
 	sock = socket(PF_INET,SOCK_STREAM, 0);
 	if(sock == -1) error_handling("socket() error");
 
-	memset(&serv_addr, 0, sizeof(serv_addr));
+	memset(&serv_addr, 0, sizeof(serv_addr)); // 초기화 
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr = inet_addr(argv[1]);
 	serv_addr.sin_port = htons(atoi(argv[2]));
 
 	if(connect(sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == -1) error_handling("connect() error!");
 
-	write(sock, argv[3], strlen(argv[3]));
+	write(sock, argv[3], strlen(argv[3])); // file path 보내기 
 	
-	char write_file_path[]="content.txt";
-	int fp=open(write_file_path, O_RDWR | O_CREAT);
+	char write_file_path[]="content.txt"; // 받은 코드 저장 파일 
+	int fp=open(write_file_path, O_RDWR | O_CREAT); // file open 
 
 	while(1)
 	{
-		memset(buff, 0, 1024);
+		memset(buff, 0, 1024); // 초기화  
 		str_len = read(sock, buff, sizeof(buff));
-		if(str_len <= 0) break;
-		printf("%s", buff);
-		
-		write(fp, buff, str_len);
+		if(str_len <= 0) break; // 받은 값이 있을 때까지 
+		printf("%s", buff); // 출력 
+		write(fp, buff, str_len); // 파일에 쓰기 
 	}
 	printf("content.txt file open please\n");
 	close(sock);

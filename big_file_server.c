@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 	struct sockaddr_in clnt_addr;
 	socklen_t clnt_addr_size;
 
-	char buff[1024]="";
+	char buff[1024]=""; // buffer size 1024 
 	char file_path[100]="";
 	int str_len;
 
@@ -29,10 +29,10 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	serv_sock = socket(PF_INET, SOCK_STREAM, 0);
+	serv_sock = socket(PF_INET, SOCK_STREAM, 0); // 소켓 생성 
 	if(serv_sock == -1) error_handling("socket() error");
 
-	memset(&serv_addr, 0, sizeof(serv_addr));
+	memset(&serv_addr, 0, sizeof(serv_addr)); // 초기화 
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	serv_addr.sin_port = htons(atoi(argv[1]));
@@ -51,12 +51,12 @@ int main(int argc, char *argv[])
 	if(str_len < 0) error_handling("read() error");
 
 	int fp = open(file_path, O_RDONLY); // open file
-	if(fp < 0) error_handling("file open error");
+	if(fp < 0) error_handling("file open error"); // file pointer error
 	while(1)
 	{
 		int length = read(fp, buff, sizeof(buff)); // read file
 		printf("%s", buff);
-		if(length > 0) write(clnt_sock, buff, length);
+		if(length > 0) write(clnt_sock, buff, length); // 파일에서 읽어온 값이 있을 때까지 
 		else break;
 	}
 	close(fp); // close file
