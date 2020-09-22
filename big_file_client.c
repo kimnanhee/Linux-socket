@@ -1,3 +1,5 @@
+// ./big_file_client 127.0.0.1 5000 b.txt
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

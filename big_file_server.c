@@ -1,3 +1,5 @@
+// ./big_file_server 5000
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
