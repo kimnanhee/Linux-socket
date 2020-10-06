@@ -16,7 +16,6 @@ int main(int argc, char *argv[])
 	struct sockaddr_in serv_addr;
 	
 	char buff[1024];
-	int str_len;
 
 	if(argc!=4)
 	{
@@ -41,13 +40,12 @@ int main(int argc, char *argv[])
 	while(1)
 	{
 		memset(buff, 0, 1024);
-		str_len = read(sock, buff, sizeof(buff));
+		int str_len = read(sock, buff, sizeof(buff)-1);
+		// printf("%s", buff);
 		if(str_len <= 0) break;
-		printf("%s", buff);
-		
 		write(fp, buff, str_len);
 	}
-	printf("content.txt file open please\n");
+	printf("content.txt file sudo open please\n");
 	close(sock);
 	return 0;
 }

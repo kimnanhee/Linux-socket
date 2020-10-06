@@ -54,13 +54,14 @@ int main(int argc, char *argv[])
 	if(fp < 0) error_handling("file open error");
 	while(1)
 	{
-		int length = read(fp, buff, sizeof(buff)); // read file
-		printf("%s", buff);
+		memset(buff, 0, 1024);
+		int length = read(fp, buff, sizeof(buff)-1); // read file
+		// printf("%s", buff);
 		if(length > 0) write(clnt_sock, buff, length);
 		else break;
 	}
 	close(fp); // close file
-
+	
 	close(clnt_sock);
 	close(serv_sock);
 	return 0;
