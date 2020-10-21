@@ -40,37 +40,50 @@ int main(int argc, char *argv[])
 	clnt_addr_size = sizeof(clnt_addr);
 	clnt_sock = accept(serv_sock, (struct sockaddr*)&clnt_addr, &clnt_addr_size);
 	if(clnt_sock == -1) error_handling("accept() error");
-	
-	str_len = read(clnt_sock, file_path, sizeof(file_path)-1); // read open file path
 
-	char command[20], contents[1024]; 
-	int str_len, state = 0;
+	char contents[1024]; 
+	char buff[1024];
+	int state = 0;
 	while(1)
 	{
-		memset(command, 0, 20);
 		memset(contents, 0, 1024);
 
 		state = 0;
-		read(clnt_sock, command, sizeof(command)-1);
-		if(strcpy(command, "cd") == 0) state = 1;
-		else if(strcpy(command, "ls") == 0) state = 2;
-		else if(strcpy(command, "put") == 0) state = 3;
-		else if(strcpy(command, "get") == 0) state = 4;
-		else if(strcpy(command, "mput") == 0) state = 5;
-		else if(strcpy(command, "mget") == 0) state = 6;
-
-		if(state) write(clnt_sock, "Y", strlen("Y"));
-		else write(clnt_sock, "N", strlne("N");
-
 		read(clnt_sock, contents, sizeof(contents)-1);
+		int i;
+		char command[10]={0, };
+		for(i=0; i<strlen(contents); i++)
+		{	
+			if(contents[i] == ' ') break;
+			command[i]=contents[i];
+		}
+		printf("%s\n", command);
+		if(strcmp(command, "cd") == 0) state = 1;
+		else if(strcmp(command, "ls") == 0) state = 2;
+		else if(strcmp(command, "put") == 0) state = 3;
+		else if(strcmp(command, "get") == 0) state = 4;
+		else if(strcmp(command, "mput") == 0) state = 5;
+		else if(strcmp(command, "mget") == 0) state = 6;
 		
-		int length = read(fp, buff, sizeof(buff)-1); // read file
-		// printf("%s", buff);
-		if(length > 0) write(clnt_sock, buff, length);
-		else break;
-	}
-	close(fp); // close file
+		printf("state - %d\n", state);
+		if(state) write(clnt_sock, "OK", strlen("OK"));
+		else write(clnt_sock, "NO", strlen("NO"));
 	
+		if(state == 1) // cd
+		{
+			sprintf(buff, "command receive, state == 1, cd fun");
+			printf("%s\n", buff);
+		}
+		else if(state == 2) // ls
+		{
+			sprintf(buff, "command receive, state == 2, ls func");
+			printf("%s\n", buff);
+		}	
+		// int length = read(fp, buff, sizeof(buff)-1); // read file
+		// printf("%s", buff);
+		// if(length > 0) write(clnt_sock, buff, length);
+		// else break;
+	}
 	close(clnt_sock);
 	close(serv_sock);
 	return 0;

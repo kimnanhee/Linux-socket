@@ -31,19 +31,24 @@ int main(int argc, char *argv[])
 
 	if(connect(sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == -1) error_handling("connect() error!");
 
-	char write_file_path[]="content.txt";
-	int fp=open(write_file_path, O_RDWR | O_CREAT | O_TRUNC);
+	// char write_file_path[]="content.txt";
+	// int fp=open(write_file_path, O_RDWR | O_CREAT | O_TRUNC);
 	
-	char command[20], contents[1024], buff[1024];
+	char contents[1024], buff[1024];
 	while(1)
 	{
-		memset(command, 0, 20);
 		memset(contents, 0, 1024);
-		scanf("%s %[^\n]s", command, contents); // user input
-		if(command == "quit") break;
-		write(sock, command, strlen(command)); // write socket
-		write(sock, contents, strlen(contents));
-		
+		printf("enter <command> <contents>\n");
+		gets(contents); // input
+		if(strcmp(contents, "quit") == 0) break;
+
+		write(sock, contents, strlen(contents)); // write socket
+		char arr[10];
+		read(sock, arr, sizeof(arr)-1); // read messege
+		printf("%s\n", arr);
+		if(strcpy(arr, "OK")) printf("read contents now\n");
+		else printf("error\n");
+
 		while(1) // read text all
 		{
 			memset(buff, 0, 1024);
