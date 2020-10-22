@@ -44,9 +44,10 @@ int main(int argc, char *argv[])
 
 		write(sock, contents, strlen(contents)); // write socket
 		char arr[10];
+		memset(arr, 0, 10);
 		read(sock, arr, sizeof(arr)-1); // read messege
-		printf("%s\n", arr);
-		if(strcpy(arr, "OK")) printf("read contents now\n");
+		printf("%s %d\n", arr, strlen(arr));
+		if(strcmp(arr, "OK") == 0) printf("read contents now\n");
 		else printf("error\n");
 
 		while(1) // read text all
@@ -54,7 +55,7 @@ int main(int argc, char *argv[])
 			memset(buff, 0, 1024);
 			int str_len = read(sock, buff, sizeof(buff)-1);
 			printf("%s", buff);
-			if(str_len <= 0) break;
+			if(str_len <= 0 || strcmp(buff, "END") == 0) break;
 		}
 		printf("\n\n");
 	}
