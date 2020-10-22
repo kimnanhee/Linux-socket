@@ -49,31 +49,49 @@ int main(int argc, char *argv[])
 	{
 		memset(contents, 0, 1024);
 
-		state = 0;
+		state = 0; // command number
 		read(clnt_sock, contents, sizeof(contents)-1);
-		int i;
+		int i, re = 0;
 		char command[10]={0, };
 		for(i=0; i<strlen(contents); i++)
 		{	
-			if(contents[i] == ' ') break;
-			command[i]=contents[i];
+			if(contents[i] == ' ') re = i;
+			
+			if(re == 0) command[i] = contents[i];
+			else contents[i-re-1] = contents[i];
 		}
-		printf("%s\n", command);
+		for(i=strlen(contents)-re-1; i<strlen(contents); i++)
+		{
+			contents[i]='\0';
+		}
+
+		printf("\n\n\ncommand - %s\n", command);
+		printf("contents - %s\n", contents);
+
 		if(strcmp(command, "cd") == 0) state = 1;
 		else if(strcmp(command, "ls") == 0) state = 2;
 		else if(strcmp(command, "put") == 0) state = 3;
 		else if(strcmp(command, "get") == 0) state = 4;
 		else if(strcmp(command, "mput") == 0) state = 5;
 		else if(strcmp(command, "mget") == 0) state = 6;
-		
 		printf("state - %d\n", state);
-		if(state) write(clnt_sock, "OK", strlen("OK"));
-		else write(clnt_sock, "NO", strlen("NO"));
-	
+		
 		if(state == 1) // cd
-		{
-			sprintf(buff, "command receive, state == 1, cd fun");
-			printf("%s\n", buff);
+		{	
+			printf("before cd - %s\n", getcwd(buff, 1024));
+			if(chdir(contents) < 0) // fail
+			{
+				memset(buff, 0, strlen(buff));
+				sprintf(buff, "fail to cd\n");
+				write(clnt_sock, buff, strlen(buff));
+			}
+			else
+			{
+				memset(buff, 0, strlen(buff));
+				sprintf(buff, "%s\n", getcwd(buff, 1024));
+				write(clnt_sock, buff, strlen(buff));
+				printf("after cd - %s\n", getcwd(buff, 1024));
+			}
 		}
 		else if(state == 2) // ls
 		{
@@ -98,16 +116,17 @@ int main(int argc, char *argv[])
 				printf("%s", buff);
 				write(clnt_sock, buff, strlen(buff));
 			}
-			sprintf(buff, "END");
-			printf("%s\n", buff);
-			write(clnt_sock, buff, strlen(buff));
 			free(cwd);
 			closedir(dir);
-		}	
-		// int length = read(fp, buff, sizeof(buff)-1); // read file
-		// printf("%s", buff);
-		// if(length > 0) write(clnt_sock, buff, length);
-		// else break;
+		}
+		else if(state == 3); // put
+		else if(state == 4);
+		else if(state == 5);
+		else if(state == 6);
+		
+		sprintf(buff, "EOC"); // end check string
+		write(clnt_sock, buff, strlen(buff));
+		printf("%s\n", buff);
 	}
 	close(clnt_sock);
 	close(serv_sock);

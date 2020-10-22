@@ -35,33 +35,32 @@ int main(int argc, char *argv[])
 	// int fp=open(write_file_path, O_RDWR | O_CREAT | O_TRUNC);
 	
 	char contents[1024], buff[1024];
+	int flag = fcntl(sock, F_GETFL, 0);
+	fcntl(sock, F_SETFL, flag | O_NONBLOCK);
 	while(1)
 	{
 		memset(contents, 0, 1024);
 		printf("enter <command> <contents>\n");
-		gets(contents); // input
+		scanf("%[^\n]s", contents);
+		// gets(contents); // input
 		if(strcmp(contents, "quit") == 0) break;
-
 		write(sock, contents, strlen(contents)); // write socket
-		char arr[10];
-		memset(arr, 0, 10);
-		read(sock, arr, sizeof(arr)-1); // read messege
-		printf("%s %d\n", arr, strlen(arr));
-		if(strcmp(arr, "OK") == 0) printf("read contents now\n");
-		else printf("error\n");
 
 		while(1) // read text all
 		{
 			memset(buff, 0, 1024);
+			printf("read start\n");
 			int str_len = read(sock, buff, sizeof(buff)-1);
+			printf("read end\n");
 			printf("%s", buff);
-			if(str_len <= 0 || strcmp(buff, "END") == 0) break;
+			if(str_len < 0 || strcmp(buff, "EOC") == 0) break;
 		}
 		printf("\n\n");
 	}
 	close(sock);
 	return 0;
 }
+
 void error_handling(char *message)
 {
 	fputs(message, stderr);
