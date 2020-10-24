@@ -1,0 +1,115 @@
+비동기식
+섹렉트 : 
+
+서버 만들 경우에 2048이하의 수는 포트로 설정할 수 없다.
+클라이언트는 서버가 보내는 데이터의 크기를 모르기 때문에, while문을 돌며 기다린다.
+
+
+
+#### 부팅 설정 - 윈도우에서 수정이 가능(/boot)
+
+##### cmdline.txt  부트로더 인자 설정
+
+quit 부팅할 때 커널 메세지 출력O/X
+splash 부팅할 때 무지개  유/무
+plymouth
+
+부팅할 때 미리 ip 설정
+ip = 192.168.101.101::192.129.101.1:255.255.255.0::eth0:off 추가하기
+
+eth ip
+wlan 와이파이
+
+
+
+##### config.txt 부팅 후 시스템 설정
+
+hdmi_force_hotplug = 1 모니터가 인식이 안되면 모니터X, 주석을 빼주면 vnc에서 사용이 가능
+
+hdmi_group 모니터가 연결되면 자동으로 해상도 설정, 주석을 빼주면 강제로 해상도 설정
+0(auto), 1(tv), 2(monitor)
+
+hdmi_mode 해상도 설정, 82(1080p), 85(720p), 87(커스텀 설정)
+hdmi_cvt (가로, 세로, 주파수, 종횡비)
+
+dtparam=12c_arm=no 12C통신 활성화
+
+pi4 설정 : 4만 동작
+all : 전체 동작
+
+dtoverlay=vc4-fkms-v3d : 3d가속, b+이상에서만 가능
+
+gpu_mem=128 : 단위M, 그래픽 관련 속도 설정
+
+
+
+##### 추가 설정
+
+temp_soft_limit=70 : 온도 제한값 설정
+
+force_turbo=1 : cpu 풀 파워 동작
+
+avoid_warnings=1 : 번개 표시 없애기
+
+max_usb_current=1 : usb연결 카메라, 오디오 연결할 때 전원 최대한 공급
+
+safe_mode_gpio=1: 핀 헤더 쪽으로 전원 최대한 공급
+
+
+
+sudo nano ssh : 비어있는 파일 만들기
+
+sudo passwd root : 루트 비밀번호 설정 - nanhee0225
+
+
+
+sudo nano /etc/ssh/sshd_config : ssh 설정 파일
+PermitRootLogin yes : 루트로 설정할 수 있도록
+sudo service ssh restart : ssh서버 재시작
+
+
+
+sudo raspi-config : 라즈베리 설정
+
+
+
+sudo apt install samba
+
+sudo pdbedir -a pi
+
+sudo nano /etc/sambe/config
+
+```
+workgruop = workgroup
+keepalive = 0 # 네트워크 연결 유지
+loadprinters = no
+show add printer wizard = no
+printcap name=/dev/null
+
+vaild users = %s 아래의 약 40줄 삭제
+
+[pi] # 일반 계정
+   comment = Home Directories
+   browseable = no
+   read only = no
+   
+   path = /home/pi/
+   create mask = 0644
+   directory mask = 0770
+   valid  users = pi
+   
+[root] # 루트 계정
+   comment = Root Directories
+   browseable =  no
+   read only = no
+   
+   path = /
+   create mask = 0644
+   directory mask = 0770
+   valid users = root
+   public = no
+   only guest = no
+   force user = root
+```
+
+내PC -> 네트워크 드라이브 연결 : 파일처럼 사용이 가능하다
