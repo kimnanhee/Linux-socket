@@ -8,12 +8,13 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
+#include <pthread.h>
 void error_handling(char *message);
+void* readThread(void*);
+int sock; // socket pointer
 
 int main(int argc, char *argv[])
 {
-	int sock;
 	struct sockaddr_in serv_addr;
 	
 	if(argc!=3)
@@ -31,34 +32,35 @@ int main(int argc, char *argv[])
 
 	if(connect(sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == -1) error_handling("connect() error!");
 
-	// char write_file_path[]="content.txt";
-	// int fp=open(write_file_path, O_RDWR | O_CREAT | O_TRUNC);
-	
-	char contents[1024], buff[1024];
-	int flag = fcntl(sock, F_GETFL, 0);
-	fcntl(sock, F_SETFL, flag | O_NONBLOCK);
+	pthread_t tid;
+	pthread_create(&tid, NULL, readThread, NULL); // make thread
+	char contents[1024];
+	printf("enter <command> <contents>\n");
+	printf("enter the \"quit\" break\n\n");
 	while(1)
 	{
-		memset(contents, 0, 1024);
-		printf("enter <command> <contents>\n");
-		scanf("%[^\n]s", contents);
-		// gets(contents); // input
+		memset(contents, 0, strlen(contents));
+		fgets(contents, 1024, stdin); // input
 		if(strcmp(contents, "quit") == 0) break;
 		write(sock, contents, strlen(contents)); // write socket
-
-		while(1) // read text all
-		{
-			memset(buff, 0, 1024);
-			printf("read start\n");
-			int str_len = read(sock, buff, sizeof(buff)-1);
-			printf("read end\n");
-			printf("%s", buff);
-			if(str_len < 0 || strcmp(buff, "EOC") == 0) break;
-		}
-		printf("\n\n");
 	}
 	close(sock);
 	return 0;
+}
+
+void* readThread(void* args)
+{
+	while (1)
+	{
+		char buff[1024] = {0,};
+		int str_len = read(sock, buff, 1024);
+		if (str_len == 0) // server down
+		{
+			printf("Connection Refused\n");
+			exit(0);
+		}
+		printf("%s", buff);
+	}
 }
 
 void error_handling(char *message)

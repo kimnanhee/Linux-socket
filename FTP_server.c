@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 	int state = 0;
 	while(1)
 	{
-		memset(contents, 0, 1024);
+		memset(contents, 0, strlen(contents));
 
 		state = 0; // command number
 		read(clnt_sock, contents, sizeof(contents)-1);
@@ -64,6 +64,7 @@ int main(int argc, char *argv[])
 		{
 			contents[i]='\0';
 		}
+		contents[strlen(contents)-1]='\0'; // '\n' => '\0'
 
 		printf("\n\n\ncommand - %s\n", command);
 		printf("contents - %s\n", contents);
@@ -87,7 +88,7 @@ int main(int argc, char *argv[])
 			}
 			else
 			{
-				memset(buff, 0, strlen(buff));
+				memset(buff, 0, 1024);
 				sprintf(buff, "%s\n", getcwd(buff, 1024));
 				write(clnt_sock, buff, strlen(buff));
 				printf("after cd - %s\n", getcwd(buff, 1024));
@@ -120,13 +121,29 @@ int main(int argc, char *argv[])
 			closedir(dir);
 		}
 		else if(state == 3); // put
-		else if(state == 4);
+		else if(state == 4) // get
+		{
+			int fp = open(contents, O_RDONLY); // open file
+			if(fp > 0)
+			{	
+				while(1)
+				{
+					memset(buff, 0, strlen(buff)); 
+					int length = read(fp, buff, sizeof(buff)-1);
+					if(length > 0) write(clnt_sock, buff, strlen(buff));
+					else break;
+				}
+			}
+			else
+			{
+				sprintf(buff, "wrong file name\n");
+				write(clnt_sock, buff, strlen(buff));
+			}
+			close(fp);
+		}
 		else if(state == 5);
 		else if(state == 6);
-		
-		sprintf(buff, "EOC"); // end check string
-		write(clnt_sock, buff, strlen(buff));
-		printf("%s\n", buff);
+		write(clnt_sock, "\n", strlen("\n"));
 	}
 	close(clnt_sock);
 	close(serv_sock);
