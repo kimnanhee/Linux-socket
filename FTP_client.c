@@ -9,9 +9,10 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <pthread.h>
+
 void error_handling(char *message);
 void* readThread(void*);
-int sock; // socket pointer
+int sock; // global type
 
 int main(int argc, char *argv[])
 {
@@ -43,7 +44,7 @@ int main(int argc, char *argv[])
 		fgets(contents, 1024, stdin); // input
 		if(strcmp(contents, "quit") == 0) break;
 		write(sock, contents, strlen(contents)); // write socket
-	}
+	}	
 	close(sock);
 	return 0;
 }
@@ -67,5 +68,5 @@ void error_handling(char *message)
 {
 	fputs(message, stderr);
 	fputc('\n', stderr);
-	exit(1);
+	exit(0);
 }
