@@ -14,12 +14,14 @@
 void error_handling(char *message);
 void* readThread(void*);
 void get(char file_name[100]);
+void put(char file_name[100]);
 
 int serv_sock; // global type
 int clnt_sock;
 int state = 0; // command number
 char contents[1024];
 int block = 1;
+char set_direct[1000]={0,}; // get file direct
 
 int main(int argc, char *argv[])
 {
@@ -98,12 +100,38 @@ int main(int argc, char *argv[])
 			free(cwd);
 			closedir(dir);
 		}
-		else if(state == 3); // put
+		else if(state == 3) // put
+		{
+			put(contents);
+		}
 		else if(state == 4) // get
 		{
 			get(contents);
 		}
-		else if(state == 5);
+		else if(state == 5) // mput
+		{
+			if(strcmp(contents, "*") == 0)
+			{
+				printf("mput *\n");
+			}
+			else
+			{
+				char file_name[100]={0,};
+				int i, re=0;
+				for(i=0; i<strlen(contents); i++)
+				{
+					if(contents[i] == ' ')
+					{
+						re = i+1;
+						printf("%s\n", file_name);
+						put(file_name);
+						memset(file_name, 0, 100);
+					}
+					file_name[i-re] = contents[i];
+				}
+				put(file_name);
+			}
+		}
 		else if(state == 6) // mget
 		{
 			if(strcmp(contents, "*") == 0)
@@ -144,19 +172,39 @@ int main(int argc, char *argv[])
 }
 void get(char file_name[100])
 {
-	int fp = open(file_name, O_RDONLY);
+	int fp = open(file_name, O_RDONLY); // read file
 	char buff[1024];
-	printf("%s %ld\n", file_name, strlen(file_name));
 	if(fp > 0)
-	{
-		while(1)
+	{	
+		char save_file[1024]={0,};
+		sprintf(save_file, "%s/%s", set_direct, file_name); // set한 위치에 복사
+		printf("save_file : %s\n", save_file);
+		int wfp = open(save_file, O_RDWR | O_CREAT | O_TRUNC, 0744); // write file
+		if(wfp > 0)
 		{
-			memset(buff, 0, strlen(buff));
-			int length = read(fp, buff, sizeof(buff)-1);
-			printf("%s", buff);
-			if(length > 0) write(clnt_sock, buff, length);
-			else break;
+			while(1)
+			{
+				memset(buff, 0, strlen(buff));
+				int length = read(fp, buff, 1024);
+				printf("%s", buff);
+				if(length > 0) 
+				{
+					write(wfp, buff, length);
+					write(clnt_sock, buff, length);
+				}
+				else break;
+			}
+			memset(buff, 0, 1024);
+			sprintf(buff, "finish get file\n");
+			write(clnt_sock, buff, strlen(buff));
 		}
+		else 
+		{
+			memset(buff, 0, 1024);
+			sprintf(buff, "error get file\n");
+			write(clnt_sock, buff, strlen(buff));
+		}
+		close(wfp);
 	}
 	else
 	{
@@ -165,6 +213,50 @@ void get(char file_name[100])
 		write(clnt_sock, buff, strlen(buff));
 	}
 	close(fp);
+}
+void put(char file_name[100])
+{
+	char save_file[1024]={0,};
+	sprintf(save_file, "%s/%s", set_direct, file_name);
+	int wfp = open(save_file, O_RDONLY);
+	char buff[1024];
+	if(wfp > 0)
+	{
+		int fp = open(file_name, O_RDWR | O_CREAT | O_TRUNC, 0744);
+		if(fp > 0)
+		{
+			while(1)
+			{
+				memset(buff, 0, 1024);
+				int length = read(wfp, buff, 1024);
+				printf("%s", buff);
+				if(length > 0)
+				{
+					write(fp, buff, length);
+					write(clnt_sock, buff, length);
+				}
+				else break;
+			}
+			memset(buff, 0, 1024);
+			sprintf(buff, "finish put file\n");
+			write(clnt_sock, buff, strlen(buff));
+		}
+		else 
+		{
+			memset(buff, 0, 1024);
+			sprintf(buff, "error put file\n");
+			write(clnt_sock, buff, strlen(buff));
+		}
+		close(fp);
+			
+	}
+	else 
+	{
+		sprintf(buff, "%s is wrong file name\n", file_name);
+		printf("%s", buff);
+		write(clnt_sock, buff, strlen(buff));
+	}
+	close(wfp);
 }
 void* readThread(void* args)
 {
@@ -195,6 +287,12 @@ void* readThread(void* args)
                 else if(strcmp(command, "mput") == 0) state = 5;
 	        else if(strcmp(command, "mget") == 0) state = 6;
 		else if(strcmp(command, "pwd") == 0) state = 7;
+		else if(strcmp(command, "set") == 0) 
+		{
+			char cwd[1024]={0,};
+			strcpy(set_direct, getcwd(cwd, 1024));
+			printf("save file derect - %s\n", cwd);
+		}
 		printf("command - %s\n", command);
 		printf("contents - %s %ld\n", contents, strlen(contents));
 		printf("state - %d\n", state);
