@@ -13,6 +13,7 @@
 
 int serv_sock; // global type
 int clnt_sock;
+int block = 1;
 
 void error_handling(char *message);
 void* readThread(void*);
@@ -45,6 +46,11 @@ int main(int argc, char *argv[])
 
 	pthread_t tid;
 	pthread_create(&tid, NULL, readThread, NULL); // make thread
+	while(1)
+	{
+		
+	}
+	return 0;
 }
 void* readThread(void* args)
 {
@@ -53,6 +59,7 @@ void* readThread(void* args)
 		block = 1;
 		memset(contents, 0, 1024);
 		int str_len = read(clnt_sock, contents, 1024);
+		if(str_len == 1 && ('0' <= contents[0] && contents[0] <= '9') 
 		char command[10]={0,};
 		int i, re=0;
 		for(i=0; i<strlen(contents); i++)
@@ -69,11 +76,11 @@ void* readThread(void* args)
 		contents[strlen(contents)-1] = '\0';
 
 		if(strcmp(command, "cd") == 0) state = 1;
-                else if(strcmp(command, "ls") == 0) state = 2;
-                else if(strcmp(command, "put") == 0) state = 3;
-                else if(strcmp(command, "get") == 0) state = 4;
-                else if(strcmp(command, "mput") == 0) state = 5;
-	        else if(strcmp(command, "mget") == 0) state = 6;
+        else if(strcmp(command, "ls") == 0) state = 2;
+        else if(strcmp(command, "put") == 0) state = 3;
+        else if(strcmp(command, "get") == 0) state = 4;
+        else if(strcmp(command, "mput") == 0) state = 5;
+	    else if(strcmp(command, "mget") == 0) state = 6;
 		else if(strcmp(command, "pwd") == 0) state = 7;
 		else if(strcmp(command, "set") == 0) 
 		{
