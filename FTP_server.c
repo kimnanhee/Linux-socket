@@ -65,9 +65,7 @@ int main(int argc, char *argv[])
 		else if(!strcmp(command, "pwd")) state = 2;
 		else if(!strcmp(command, "ls")) state = 3;
 		else if(!strcmp(command, "get")) state = 4;
-		//else if(!strcmp(command, "mget")) state = 4;
 		else if(!strcmp(command, "put")) state = 6;
-		// else if(!strcmp(command, "mput")) state = 7;
 
 		if(state == 2) // pwd
 		{
@@ -173,8 +171,7 @@ void nh_get() // 파일 보내기
 {
 	char* path = ptr;
 	char type = 'F';
-	int fp = open(path, O_RDONLY);
-	printf("%d\n", fp);
+	int fp = open(path, O_RDONLY); // 파일 열기
 	char buff[1024];
 	if(fp > 0)
 	{
@@ -195,6 +192,12 @@ void nh_get() // 파일 보내기
 		}
 		printf("get finish\n");
 	}
-	else printf("wrong file name\n");
+	else // 파일 열 수 없을 때
+	{
+		memset(buff, 0, 1024);
+		strcpy(buff, "can not get file\n");
+		printf("%s", buff);
+		nh_send(buff, strlen(buff));
+	}
 	close(fp);	
 }

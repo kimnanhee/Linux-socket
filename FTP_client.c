@@ -17,7 +17,7 @@ int sock; // global type
 int block = 0;
 int state = 0;
 char contents[1024];
-char *command;
+char *command; 
 char *ptr;
 
 int main(int argc, char *argv[])
@@ -56,36 +56,51 @@ int main(int argc, char *argv[])
 		else if(!strcmp(command, "get")) state = 4;
 		else if(!strcmp(command, "mget")) state = 5;
 		else if(!strcmp(command, "put")) state = 6;
-		// else if(!strcmp(command, "mput")) state = 7;
+		else if(!strcmp(command, "mput")) state = 7;
 		else if(!strcmp(command, "quit")) break;
 		else{printf("wrong command\n"); continue;}
 
-		printf("%d\n", state);
+		// printf("%d\n", state);
 
-		if(state == 1 || state == 3 || state == 4 || state == 5 || state == 6) // cd, ls, get, put
+		if(state == 2) write(sock, command, strlen(command)); // pwd
+		else // cd, ls, get, mget, put, mput
 		{
 			ptr = strtok(NULL, DELIM); // 파일 이름 가져오기
-			if (state == 5)
+			
+			if (state == 5) // mget
 			{
 				printf("%s get? (y/n) : ", ptr);
-				char input[16];
-				scanf("%s", input);
+				char input[10]={0};
+				fgets(input, 10, stdin);
 				
-				if(strcmp(input, "y"))
+				if(*input != 'y')
+				{
 					continue;
-				command += 1;
+				}
+				strcpy(command, "get");
+			}
+			if(state == 7) // mput
+			{
+				printf("%s put? (y/n) : ", ptr);
+				char input[10]={0};
+				fgets(input, 10, stdin);
+
+				if(input[0] != 'y')
+				{
+					continue;
+				}
+				strcpy(command, "put");
 			}
 			char buff[1024]={0,};
 			sprintf(buff, "%s %s ", command, ptr); // 명령어, 파일 이름 보내기
 			write(sock, buff, strlen(buff));
 			
-			if(state == 6) // put
+			if(state == 6 || state == 7) // put, mput
 			{
 				struct stat info;
 				stat(ptr, &info);
 				write(sock, (char*)&info.st_size, sizeof(int)); // 전체 파일 사이즈
 				int fp = open(ptr, O_RDONLY);
-				char buff[1024];
 				if(fp > 0)
 				{
 					while(1)
@@ -100,7 +115,6 @@ int main(int argc, char *argv[])
 				close(fp);
 			}
 		}
-		else write(sock, command, strlen(command));
 		block = 1; // 읽고 있는 중에는 block이 1
 	}	
 	close(sock);
@@ -115,11 +129,11 @@ void* readThread(void* args)
 		char type;
 		char buff[1024] = {0,};
 		
-		read(sock, (char*)&length, sizeof(int));
-		read(sock, &type, sizeof(char));
+		read(sock, (char*)&length, sizeof(int)); // 보내는 파일 크기 읽어오기
+		read(sock, &type, sizeof(char)); // 보내는 파일의 타입 읽어오기 (M or F)
 		// printf("%c\n", type);
 
-		if (type == 'F' && (state == 5 || state == 4))
+		if (type == 'F' && (state == 5 || state == 4)) // get, mget
 		{
 			fd = open(ptr, O_CREAT | O_TRUNC | O_WRONLY, 0744);
 		}
@@ -129,12 +143,11 @@ void* readThread(void* args)
 		{
 			int red = read(sock, buff, read_size);
 			write(fd, buff, red);
-			length -= red;
+			length -= red; // 파일 크기 - 현재 읽어온 크기
 			read_size = length > 1024 ? 1024 : length;
 		}
-		block = 0;
-		if (fd != STDOUT_FILENO)
-			close(fd);
+		block = 0; // 다 읽었을 경우, block이 0
+		if (fd != STDOUT_FILENO) close(fd);
 	}
 }
 
