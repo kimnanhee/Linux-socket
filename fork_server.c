@@ -56,6 +56,8 @@ int main(int argc, char *argv[])
 					printf("%d - %s", clnt_sock, buff);
 				else break;
 			}
+			close(clnt_sock);
+			return 0;
 		}
 	        else if(pid > 0);
 	        else error_handling("fork() error");
